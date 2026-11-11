@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>إدارة المقصف المدرسي - متوسطة عبدالرحمن الغافقي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+        body { background: #0f172a; color: #f8fafc; padding: 20px; min-height: 100vh; }
+        .container { max-width: 1150px; margin: 0 auto; }
+        header { display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 20px 30px; border-radius: 16px; border: 2px solid #38bdf8; margin-bottom: 25px; }
+        header h1 { font-size: 1.3rem; color: #38bdf8; }
+        .btn-logout { background: #ef4444; color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-weight: bold; }
+        .card { background: #1e293b; padding: 25px; border-radius: 16px; border: 1px solid #334155; margin-bottom: 25px; }
+        .card h3 { color: #38bdf8; margin-bottom: 15px; font-size: 1.2rem; border-bottom: 2px solid #334155; padding-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+        table { width: 100%; border-collapse: collapse; background: #0f172a; border-radius: 10px; overflow: hidden; margin-top: 10px; }
+        th, td { padding: 10px; text-align: center; border-bottom: 1px solid #334155; font-size: 0.88rem; }
+        th { background: #1e293b; color: #38bdf8; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
+        input, select { padding: 8px; background: #0f172a; border: 1px solid #475569; color: white; border-radius: 8px; width: 100%; text-align: center; font-size: 0.85rem; }
+        .btn-add { background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 15px; }
+        .btn-edit { background: #38bdf8; color: #0f172a; border: none; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-del { background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-deliver { background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-reject { background: #f59e0b; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fa-solid fa-store"></i> لوحة تحكم المقصف المدرسي</h1>
+            <a href="/logout" class="btn-logout"><i class="fa-solid fa-right-from-bracket"></i> تسجيل الخروج</a>
+        </header>
+
+        <!-- طلبات الطلاب الواردة (مع خيارات تسليم الطلب أو رفضه مع إدخال السبب) -->
+        <div class="card">
+            <h3><i class="fa-solid fa-cart-shopping"></i> طلبات الطلاب الواردة (إدارة التسليم أو الرفض)</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>اسم الطالب</th>
+                        <th>الصنف المطلوب</th>
+                        <th>الكمية</th>
+                        <th>السعر الإجمالي</th>
+                        <th>الحالة / سبب الرفض</th>
+                        <th>الإجراءات (تسليم أو رفض)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if canteen_orders %}
+                        {% for order in canteen_orders %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td><strong style="color: #38bdf8;">{{ order[1] }}</strong></td>
+                            <td>{{ order[2] }}</td>
+                            <td><span style="background: rgba(56,189,248,0.15); color: #38bdf8; padding: 3px 10px; border-radius: 20px; font-weight: bold;">{{ order[3] }}</span></td>
+                            <td><strong style="color: #10b981;">{{ order[4] }}</strong></td>
+                            <td>
+                                {% if order[5] == 'ملغي من الطالب' %}
+                                    <span style="color: #ef4444; font-weight: bold;">تم الإلغاء من الطالب</span>
+                                {% else %}
+                                    <span style="color: #f59e0b; font-weight: bold;">{{ order[5] }}</span>
+                                    {% if order[6] %}
+                                    <div style="font-size: 0.75rem; color: #ef4444; margin-top: 3px;">السبب: {{ order[6] }}</div>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 6px; justify-content: center; align-items: center; flex-wrap: wrap;">
+                                    <!-- زر تسليم الطلب -->
+                                    <form action="/deliver_order/{{ order[0] }}" method="POST">
+                                        <button type="submit" class="btn-deliver" title="تسليم الطلب للطالب"><i class="fa-solid fa-check"></i> تسليم</button>
+                                    </form>
+
+                                    <!-- نموذج رفض الطلب مع إدخال السبب -->
+                                    <form action="/reject_order/{{ order[0] }}" method="POST" style="display: flex; gap: 4px; align-items: center;">
+                                        <input type="text" name="cancel_reason" placeholder="سبب الرفض..." required style="width: 110px; padding: 5px; font-size: 0.75rem;">
+                                        <button type="submit" class="btn-reject" title="رفض الطلب"><i class="fa-solid fa-ban"></i> رفض</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="7" style="color: #94a3b8; text-align: center; padding: 15px;">لا توجد طلبات جديدة معلقة حالياً.</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- إضافة صنف جديد للمقصف -->
+        <div class="card">
+            <h3><i class="fa-solid fa-plus-circle"></i> إضافة صنف أو وجبة جديدة للمقصف</h3>
+            <form action="/add_canteen_item" method="POST">
+                <div class="form-grid">
+                    <div>
+                        <label style="font-size: 0.85rem; color: #cbd5e1; display: block; margin-bottom: 5px;">اسم الصنف:</label>
+                        <input type="text" name="item_name" placeholder="مثال: فطيرة جبن" required>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.85rem; color: #cbd5e1; display: block; margin-bottom: 5px;">السعر:</label>
+                        <input type="text" name="price" placeholder="مثال: 3.00 ريال" required>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.85rem; color: #cbd5e1; display: block; margin-bottom: 5px;">التصنيف:</label>
+                        <input type="text" name="category" placeholder="مثال: وجبات خفيفة" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn-add"><i class="fa-solid fa-check"></i> إضافة الصنف للمتجر</button>
+            </form>
+        </div>
+
+        <!-- قائمة الأصناف الحالية (تعديل أو حذف مباشر) -->
+        <div class="card">
+            <h3><i class="fa-solid fa-list"></i> الأصناف المتوفرة حالياً (تعديل أو حذف مباشر)</h3>
+            <table>
+                <thead>
+                    <tr><th>#</th><th>اسم الصنف</th><th>السعر</th><th>التصنيف</th><th>تعديل</th><th>حذف</th></tr>
+                </thead>
+                <tbody>
+                    {% for item in canteen_items %}
+                    <tr>
+                        <form action="/edit_canteen_item/{{ item[0] }}" method="POST">
+                            <td>{{ loop.index }}</td>
+                            <td><input type="text" name="item_name" value="{{ item[1] }}" required></td>
+                            <td><input type="text" name="price" value="{{ item[2] }}" required></td>
+                            <td><input type="text" name="category" value="{{ item[3] }}" required></td>
+                            <td><button type="submit" class="btn-edit"><i class="fa-solid fa-pen"></i> حفظ</button></td>
+                        </form>
+                        <td>
+                            <form action="/delete_canteen_item/{{ item[0] }}" method="POST" onsubmit="return confirm('متأكد من حذف الصنف؟');">
+                                <button type="submit" class="btn-del"><i class="fa-solid fa-trash"></i> حذف</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

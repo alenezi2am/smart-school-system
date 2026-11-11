@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>لوحة تحكم المعلم - متوسطة عبدالرحمن الغافقي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+        body { background: #0f172a; color: #f8fafc; padding: 20px; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header { display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 20px 30px; border-radius: 16px; border: 2px solid #38bdf8; margin-bottom: 25px; }
+        header h1 { font-size: 1.3rem; color: #38bdf8; }
+        header h1 span { display: block; font-size: 0.85rem; color: #cbd5e1; margin-top: 4px; }
+        .btn-logout { background: #ef4444; color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-weight: bold; }
+        .card { background: #1e293b; padding: 25px; border-radius: 16px; border: 1px solid #334155; margin-bottom: 25px; }
+        .card h3 { color: #38bdf8; margin-bottom: 15px; font-size: 1.2rem; border-bottom: 2px solid #334155; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        table { width: 100%; border-collapse: collapse; background: #0f172a; border-radius: 10px; overflow: hidden; margin-top: 10px; }
+        th, td { padding: 10px 6px; text-align: center; border-bottom: 1px solid #334155; font-size: 0.85rem; }
+        th { background: #1e293b; color: #38bdf8; }
+        input[type="number"], select { width: 55px; padding: 4px; background: #1e293b; border: 1px solid #475569; color: white; text-align: center; border-radius: 6px; }
+        .btn-save { background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .filter-form select { padding: 6px 12px; background: #0f172a; border: 1px solid #38bdf8; color: white; border-radius: 8px; font-weight: bold; width: auto; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-box { background: #1e293b; padding: 20px; border-radius: 14px; border: 1px solid #334155; text-align: center; }
+        .stat-box h4 { color: #94a3b8; font-size: 0.9rem; margin-bottom: 5px; }
+        .stat-box .num { color: #38bdf8; font-size: 1.5rem; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fa-solid fa-chalkboard-user"></i> لوحة تحكم المعلم<span>المادة: {{ teacher_subject }} | أ. {{ session['username'] }}</span></h1>
+            <a href="/logout" class="btn-logout"><i class="fa-solid fa-right-from-bracket"></i> تسجيل الخروج</a>
+        </header>
+
+        <!-- إحصائيات المعلم البصرية الذكية -->
+        <div class="stats-grid">
+            <div class="stat-box">
+                <h4>إجمالي طلاب الفصل ({{ selected_class }})</h4>
+                <div class="num">{{ total_stu_count }} طالب</div>
+            </div>
+            <div class="stat-box">
+                <h4>متوسط درجات الفصل</h4>
+                <div class="num" style="color: #10b981;">{{ avg_total_grade }} / 100</div>
+            </div>
+            <div class="stat-box">
+                <h4>المادة الدراسية المسندة</h4>
+                <div class="num" style="font-size: 1.2rem; color: #f59e0b;">{{ teacher_subject }}</div>
+            </div>
+        </div>
+
+        <!-- سجل درجات الطلاب ورصد الحضور والغياب -->
+        <div class="card">
+            <h3>
+                <span><i class="fa-solid fa-pen-to-square"></i> رصد الدرجات والتقييم ومتابعة الحضور</span>
+                <form method="GET" action="/teacher" class="filter-form">
+                    <label style="font-size: 0.85rem; color: #cbd5e1; margin-left: 8px;">اختر الفصل:</label>
+                    <select name="class_filter" onchange="this.form.submit()">
+                        <option value="3 / 1" {% if selected_class == '3 / 1' %}selected{% endif %}>3 / 1</option>
+                        <option value="3 / 2" {% if selected_class == '3 / 2' %}selected{% endif %}>3 / 2</option>
+                        <option value="3 / 3" {% if selected_class == '3 / 3' %}selected{% endif %}>3 / 3</option>
+                        <option value="3 / 4" {% if selected_class == '3 / 4' %}selected{% endif %}>3 / 4</option>
+                        <option value="3 / 5" {% if selected_class == '3 / 5' %}selected{% endif %}>3 / 5</option>
+                        <option value="3 / 6" {% if selected_class == '3 / 6' %}selected{% endif %}>3 / 6</option>
+                        <option value="3 / 7" {% if selected_class == '3 / 7' %}selected{% endif %}>3 / 7</option>
+                        <option value="3 / 8" {% if selected_class == '3 / 8' %}selected{% endif %}>3 / 8</option>
+                    </select>
+                </form>
+            </h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>اسم الطالب</th>
+                        <th>الحالة / الحضور</th>
+                        <th>الواجبات (15)</th>
+                        <th>اختبار 1 (15)</th>
+                        <th>اختبار 2 (15)</th>
+                        <th>السلوك (10)</th>
+                        <th>النهائي (45)</th>
+                        <th>المجموع (100)</th>
+                        <th>حفظ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in students %}
+                    <tr>
+                        <form action="/update_student/{{ s[0] }}" method="POST">
+                            <td>{{ loop.index }}</td>
+                            <td><strong style="color: #38bdf8;">{{ s[1] }}</strong></td>
+                            <td>
+                                <select name="attendance" style="width: 80px; font-size: 0.8rem; background: #0f172a; color: {% if s[11] == 'غائب' %}#ef4444{% elif s[11] == 'متأخر' %}#f59e0b{% else %}#10b981{% endif %}; font-weight: bold;">
+                                    <option value="حاضر" {% if s[11] == 'حاضر' %}selected{% endif %}>حاضر</option>
+                                    <option value="غائب" {% if s[11] == 'غائب' %}selected{% endif %}>غائب</option>
+                                    <option value="متأخر" {% if s[11] == 'متأخر' %}selected{% endif %}>متأخر</option>
+                                </select>
+                            </td>
+                            <td><input type="number" name="hw_grade" value="{{ s[5] }}" min="0" max="15"></td>
+                            <td><input type="number" name="exam1_grade" value="{{ s[6] }}" min="0" max="15"></td>
+                            <td><input type="number" name="exam2_grade" value="{{ s[7] }}" min="0" max="15"></td>
+                            <td><input type="number" name="behavior_grade" value="{{ s[8] }}" min="0" max="10"></td>
+                            <td><input type="number" name="final_grade" value="{{ s[9] }}" min="0" max="45"></td>
+                            <td><strong style="color: #10b981; font-size: 1rem;">{{ s[10] }}</strong></td>
+                            <td><button type="submit" class="btn-save"><i class="fa-solid fa-check"></i> حفظ</button></td>
+                        </form>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- نشر الواجبات والإعلانات -->
+        <div class="card">
+            <h3><i class="fa-solid fa-bullhorn"></i> نشر واجب أو إعلان جديد للفصل</h3>
+            <form action="/add_homework" method="POST">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="font-size: 0.85rem; color: #cbd5e1; display: block; margin-bottom: 5px;">عنوان الواجب/الإعلان:</label>
+                        <input type="text" name="title" placeholder="مثال: واجب الدرس الأول" required style="width: 100%; padding: 8px; background: #0f172a; border: 1px solid #475569; color: white; border-radius: 8px;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.85rem; color: #cbd5e1; display: block; margin-bottom: 5px;">الفصل المستهدف:</label>
+                        <select name="class_name" style="width: 100%; padding: 8px; background: #0f172a; border: 1px solid #475569; color: white; border-radius: 8px;">
+                            <option value="الكل">جميع الفصول</option>
+                            <option value="3 / 1">3 / 1</option>
+                            <option value="3 / 2">3 / 2</option>
+                            <option value="3 / 3">3 / 3</option>
+                            <option value="3 / 4">3 / 4</option>
+                            <option value="3 / 5">3 / 5</option>
+                            <option value="3 / 6">3 / 6</option>
+                            <option value="3 / 7">3 / 7</option>
+                            <option value="3 / 8">3 / 8</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 0.85rem; color: #cbd5e1; display: block; margin-bottom: 5px;">تفاصيل التكليف:</label>
+                    <textarea name="content" placeholder="اكتب تفاصيل الواجب هنا..." required style="width: 100%; height: 80px; padding: 10px; background: #0f172a; border: 1px solid #475569; color: white; border-radius: 8px; font-family: 'Cairo';"></textarea>
+                </div>
+                <button type="submit" class="btn-save"><i class="fa-solid fa-paper-plane"></i> نشر الإعلان للطلاب</button>
+            </form>
+        </div>
+
+        <!-- جدول الحصص الأسبوعي للفصل المحدد -->
+        <div class="card">
+            <h3><i class="fa-solid fa-calendar-days"></i> جدول الحصص الأسبوعي ({{ selected_class }})</h3>
+            <table>
+                <thead>
+                    <tr><th>اليوم</th><th>الحصة 1</th><th>الحصة 2</th><th>الحصة 3</th><th>الحصة 4</th><th>الحصة 5</th><th>الحصة 6</th><th>الحصة 7</th></tr>
+                </thead>
+                <tbody>
+                    {% for row in schedule_rows %}
+                    <tr>
+                        <td><strong style="color: #38bdf8;">{{ row[0] }}</strong></td>
+                        <td>{{ row[1] }}</td><td>{{ row[2] }}</td><td>{{ row[3] }}</td><td>{{ row[4] }}</td><td>{{ row[5] }}</td><td>{{ row[6] }}</td><td>{{ row[7] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

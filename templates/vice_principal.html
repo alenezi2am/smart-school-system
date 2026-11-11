@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>لوحة الإدارة والوكيل - متوسطة عبدالرحمن الغافقي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+        body { background: #0f172a; color: #f8fafc; padding: 20px; min-height: 100vh; }
+        .container { max-width: 1150px; margin: 0 auto; }
+        header { display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 20px 30px; border-radius: 16px; border: 2px solid #38bdf8; margin-bottom: 25px; }
+        header h1 { font-size: 1.3rem; color: #38bdf8; }
+        .btn-logout { background: #ef4444; color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-weight: bold; }
+        .card { background: #1e293b; padding: 25px; border-radius: 16px; border: 1px solid #334155; margin-bottom: 25px; }
+        .card h3 { color: #38bdf8; margin-bottom: 15px; font-size: 1.2rem; border-bottom: 2px solid #334155; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        table { width: 100%; border-collapse: collapse; background: #0f172a; border-radius: 10px; overflow: hidden; margin-top: 10px; }
+        th, td { padding: 10px; text-align: center; border-bottom: 1px solid #334155; font-size: 0.85rem; }
+        th { background: #1e293b; color: #38bdf8; }
+        input[type="text"] { width: 90px; padding: 5px; background: #1e293b; border: 1px solid #475569; color: white; text-align: center; border-radius: 6px; font-size: 0.8rem; }
+        .btn-save { background: #10b981; color: white; border: none; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-del { background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .filter-form select { padding: 6px 12px; background: #0f172a; border: 1px solid #38bdf8; color: white; border-radius: 8px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fa-solid fa-user-shield"></i> لوحة الإدارة والشؤون التعليمية - الوكيل</h1>
+            <a href="/logout" class="btn-logout"><i class="fa-solid fa-right-from-bracket"></i> تسجيل الخروج</a>
+        </header>
+
+        <div class="card">
+            <h3><i class="fa-solid fa-users"></i> إحصائيات المدرسة</h3>
+            <p style="font-size: 1.1rem; color: #cbd5e1;">إجمالي الطلاب المسجلين: <strong style="color: #38bdf8;">{{ total_students }}</strong> | إجمالي المعلمين: <strong style="color: #38bdf8;">{{ total_teachers }}</strong></p>
+        </div>
+
+        <!-- إدارة وتعديل جداول الحصص الدراسية مع فرز الفصول -->
+        <div class="card">
+            <h3>
+                <span><i class="fa-solid fa-calendar-days"></i> إدارة وتعديل جدول الحصص الأسبوعي الرسمي</span>
+                <form method="GET" action="/admin" class="filter-form">
+                    <label style="font-size: 0.85rem; color: #cbd5e1; display:inline-block; margin-left:8px;">فرز الفصل:</label>
+                    <select name="class_filter" onchange="this.form.submit()">
+                        <option value="3 / 1" {% if class_filter == '3 / 1' %}selected{% endif %}>3 / 1</option>
+                        <option value="3 / 2" {% if class_filter == '3 / 2' %}selected{% endif %}>3 / 2</option>
+                        <option value="3 / 3" {% if class_filter == '3 / 3' %}selected{% endif %}>3 / 3</option>
+                        <option value="3 / 4" {% if class_filter == '3 / 4' %}selected{% endif %}>3 / 4</option>
+                        <option value="3 / 5" {% if class_filter == '3 / 5' %}selected{% endif %}>3 / 5</option>
+                        <option value="3 / 6" {% if class_filter == '3 / 6' %}selected{% endif %}>3 / 6</option>
+                        <option value="3 / 7" {% if class_filter == '3 / 7' %}selected{% endif %}>3 / 7</option>
+                        <option value="3 / 8" {% if class_filter == '3 / 8' %}selected{% endif %}>3 / 8</option>
+                    </select>
+                </form>
+            </h3>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 12px;">يمكن للأدمن تعديل مواد الحصص للفصل المحدد ({{ class_filter }}) مباشرة والضغط على حفظ:</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>اليوم</th><th>الحصة 1</th><th>الحصة 2</th><th>الحصة 3</th><th>الحصة 4</th><th>الحصة 5</th><th>الحصة 6</th><th>الحصة 7</th><th>الإجراء</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in schedule_rows %}
+                    <tr>
+                        <form action="/update_schedule" method="POST">
+                            <td><strong style="color: #38bdf8;">{{ row[1] }}</strong></td>
+                            <input type="hidden" name="sched_id" value="{{ row[0] }}">
+                            <input type="hidden" name="class_target" value="{{ class_filter }}">
+                            <td><input type="text" name="p1" value="{{ row[2] }}"></td>
+                            <td><input type="text" name="p2" value="{{ row[3] }}"></td>
+                            <td><input type="text" name="p3" value="{{ row[4] }}"></td>
+                            <td><input type="text" name="p4" value="{{ row[5] }}"></td>
+                            <td><input type="text" name="p5" value="{{ row[6] }}"></td>
+                            <td><input type="text" name="p6" value="{{ row[7] }}"></td>
+                            <td><input type="text" name="p7" value="{{ row[8] }}"></td>
+                            <td><button type="submit" class="btn-save">تحديث</button></td>
+                        </form>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- حسابات المعلمين -->
+        <div class="card">
+            <h3><i class="fa-solid fa-chalkboard-user"></i> حسابات المعلمين وموادهم الدراسية</h3>
+            <table>
+                <thead><tr><th>#</th><th>اسم المعلم</th><th>كلمة المرور</th><th>المادة</th><th>الإجراء</th></tr></thead>
+                <tbody>
+                    {% for t in teachers_accounts %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td><strong>{{ t[1] }}</strong></td>
+                        <td><code style="background: #0f172a; padding: 3px 8px; border-radius: 4px; color: #10b981;">{{ t[2] }}</code></td>
+                        <td><span style="color: #38bdf8; font-weight: bold;">{{ t[3] }}</span></td>
+                        <td>
+                            <form action="/delete_user/{{ t[0] }}" method="POST" onsubmit="return confirm('هل أنت متأكد من حذف حساب المعلم؟');"><button type="submit" class="btn-del">حذف</button></form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- حسابات الطلاب مع زر الحذف الشامل -->
+        <div class="card">
+            <h3><span><i class="fa-solid fa-user-graduate"></i> حسابات الطلاب وفصولهم وإدارتهم</span></h3>
+            <table>
+                <thead><tr><th>#</th><th>اسم الطالب</th><th>كلمة المرور</th><th>الفصل</th><th>الحالة</th><th>الإجراء</th></tr></thead>
+                <tbody>
+                    {% for s in students_accounts %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td><strong>{{ s[1] }}</strong></td>
+                        <td><code style="background: #0f172a; padding: 3px 8px; border-radius: 4px; color: #10b981;">{{ s[2] }}</code></td>
+                        <td><span style="color: #38bdf8; font-weight: bold;">{{ s[4] }}</span></td>
+                        <td><span style="color: #10b981;">منتظم</span></td>
+                        <td>
+                            <form action="/delete_student/{{ s[0] }}" method="POST" onsubmit="return confirm('هل أنت متأكد من حذف هذا الطالب نهائياً من النظام؟');">
+                                <button type="submit" class="btn-del">حذف</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
